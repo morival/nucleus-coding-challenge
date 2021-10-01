@@ -16,5 +16,44 @@ const transactions = [
 ];
 
 export function getDailyPortfolioValues() {
-    return [];
+
+    // set the date range 
+    const getDaysArray = function(start, end) {
+        for(var arr=[],dt=new Date(start); 
+        dt<=end; 
+        dt.setDate(dt.getDate()+1)){
+            arr.push({effectiveDate: new Date(dt), value: 0});
+        }
+        return arr;
+    };
+
+    // sum all transactions per day
+    const reduceValue = function(arr) {
+        const total = arr.reduce((runningTotal, transaction) => {
+            return runningTotal + transaction.value;
+        },0)
+        return total
+    }
+    
+
+    const weekArray = getDaysArray(new Date("2021-09-01"),new Date("2021-09-07"))
+
+    let amountOfBitcoin = 0
+    let lastRecordedPrice = 0
+    let dayValue = 0
+    const dailyPortfolioValues = weekArray.map(day => {
+        const dayPrices = prices.filter(price => price.effectiveDate.getDay() === day.effectiveDate.getDay())
+        if(dayPrices.length !== 0){
+            lastRecordedPrice = dayPrices[dayPrices.length-1].price
+        }
+        const dayTransactions = transactions.filter(transaction => transaction.effectiveDate.getDay() === day.effectiveDate.getDay())
+        if (dayTransactions.length !== 0) {
+            amountOfBitcoin += reduceValue(dayTransactions)   
+        }
+        dayValue = amountOfBitcoin*lastRecordedPrice
+        day.value = Math.round(dayValue*100000)/100000
+        return day
+    })
+
+    return dailyPortfolioValues;
 }
