@@ -35,24 +35,33 @@ export function getDailyPortfolioValues() {
         return total
     }
     
-
+    // declare the date range
     const weekArray = getDaysArray(new Date("2021-09-01"),new Date("2021-09-07"))
 
+    // daily values
     let amountOfBitcoin = 0
     let lastRecordedPrice = 0
     let dayValue = 0
+
+
     const dailyPortfolioValues = weekArray.map(day => {
         const dayPrices = prices.filter(price => price.effectiveDate.getDay() === day.effectiveDate.getDay())
+        // update the last recorded price of BTC for the day if provided 
         if(dayPrices.length !== 0){
             lastRecordedPrice = dayPrices[dayPrices.length-1].price
         }
+        // create a list of transactions on the day
         const dayTransactions = transactions.filter(transaction => transaction.effectiveDate.getDay() === day.effectiveDate.getDay())
+        // update the amount of BTC if any transactions were made
         if (dayTransactions.length !== 0) {
             amountOfBitcoin += reduceValue(dayTransactions)   
         }
+        // calculate the value of possesed BTC
         dayValue = amountOfBitcoin*lastRecordedPrice
+        // update the value of possesed BTC on the day (round value for corrections)
         day.value = Math.round(dayValue*100000)/100000
         return day
+        
     })
 
     return dailyPortfolioValues;
